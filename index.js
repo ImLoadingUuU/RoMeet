@@ -40,9 +40,13 @@ app.get("/endSession",async (req,res) => {
     res.json({ status: "success" })
 })
 app.post("/sendImageBuffer",(req,res) => {
+    // Vulnerability
+    // OTHER PLAYER COULD USE YOUR SESSION TO SEND IMAGE DATA AS YOU
+    // Vulnerability
     if (!req.cookies.session) return res.json({ status: "error", message: "You don't have a session" })
     if (!activeSessions[req.cookies.session]) return res.json({ status: "error", message: "Session not found in server" })
-
+    // USE JPEG DO NOT USE PNG
+    // !!!!!!!!! RESIZE THEN CONVERT TO RAW WILL BROKEN !!!!!!!!!!!! //
     sessionBuffers[req.cookies.session] = Buffer.from(req.body.replace("data:image/jpeg;base64",""),"base64")
     res.json({ status: "success" })
 })
