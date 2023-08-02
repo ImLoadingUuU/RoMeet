@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Session</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700&amp;display=swap">
+    <link rel="stylesheet" href="assets/css/bs-theme-overrides.css">
+    <link rel="stylesheet" href="assets/css/Features-Cards-icons.css">
+    <script>
+        function startSession(){
+            return new Promise((resolve) => {
+                let xhr = new XMLHttpRequest();
+                xhr.open("GET","./startSession");
+                xhr.withCredentials = true;
+           
+               xhr.onload = ()=>{
+                resolve(JSON.parse(xhr.responseText))
+               }
+               xhr.send()
+                
+            })
+            
+        }
+        async function initializeCamera() {
+            try {
+                const video = document.getElementById("cameraElement")
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing camera: ', error);
+            }
+        }
+        async function sendCameraBuffer(){
+            const video = document.getElementById("cameraElement")
+            const canvas = document.getElementById("cameraCanvas")
+            canvas.getContext('2d').drawImage(video, 0, 0, 128,128);
+            const base64 = canvas.toDataURL("image/jpeg",0.5)
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST","./sendImageBuffer")
+            xhr.withCredentials = true;
+            xhr.send(base64)
+        }
+      document.addEventListener("DOMContentLoaded",async () => {
+        let result = await startSession();
+        document.getElementById("sessionCode").innerHTML = result.session
+        const video = document.getElementById("cameraElement")
+         initializeCamera()
+         setInterval(()=>{
+             sendCameraBuffer()
+         },100)
+      })
+
+    </script>
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="py-4 py-xl-5">
+        <div class="container">
+            <div class="text-dark bg-light border rounded border-0 border-light d-flex flex-column justify-content-between flex-lg-row p-4 p-md-5">
+                <div class="pb-2 pb-lg-1">
+                    
+                    <h2 class="fw-bold mb-2">RoMeet Session Created</h2>
+                    <p class="mb-0">Close this tab to end this session</p>
+                    <video id="cameraElement" class="" width="128" height="128" autoplay></video>
+                    <canvas id="cameraCanvas" class="" width="128" height="128"></canvas>
+                </div>
+                <div class="my-2"><code id="sessionCode">session-code-here-loading</code></div>
+            </div>
+        </div>
+    </section>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
